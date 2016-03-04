@@ -1,0 +1,99 @@
+<html>
+<head>
+    <title>Bouncing Ball with inputs</title>
+    <style>
+	form {
+		width:330px;
+		margin:20px;
+		background-color:brown;
+		padding:20px;
+	}
+	input:valid {
+		background:green;
+	}
+	input:invalid {
+		background:red;
+	}
+	</style>
+    <script type="text/javascript">
+
+	var box_x = 20;
+	var box_y = 30;
+	var boxwidth = 350;
+	var boxheight = 250;
+	var ballradius = 10;
+	var boxboundx = boxwidth + box_x - ballradius;
+	var boxboundy = boxheight + box_y - ballradius;
+	var inboxboundx = box_x + ballradius;
+	var inboxboundy = box_y + ballradius;
+	var ball_x = 50;
+	var ball_y = 60;
+	var platno;
+	var ball_vx = 4;
+	var ball_vy = 8;
+	
+function init(){  
+	platno = document.getElementById('canvas').getContext('2d'); 
+	platno.lineWidth = ballradius;
+	platno.fillStyle ="rgb(200,0,50)";
+	//pomeriLoptu();  
+	setInterval(pomeriLoptu,100);  
+}  
+
+function pomeriLoptu(){  
+	//briše trag na platnu
+	platno.clearRect(box_x,box_y,boxwidth,boxheight);
+	pomeriIproveri();
+
+	platno.beginPath();
+	platno.arc(ball_x, ball_y, ballradius,0,Math.PI*2,true);
+	platno.fill();
+	platno.strokeRect(box_x, box_y, boxwidth, boxheight);
+} 
+
+function pomeriIproveri() {
+	var newball_x = ball_x + ball_vx;
+	var newball_y = ball_y + ball_vy;
+
+	if (newball_x > boxboundx) {
+		ball_vx =-ball_vx;
+		newball_x = boxboundx;
+	}
+	if (newball_x < inboxboundx) {
+		newball_x = inboxboundx
+		ball_vx = -ball_vx;
+	}
+	if (newball_y > boxboundy) {
+		newball_y = boxboundy;
+		ball_vy =-ball_vy;
+	}
+	if (newball_y < inboxboundy) {
+		newball_y = inboxboundy;
+		ball_vy = -ball_vy;
+	}
+		ball_x = newball_x;
+		ball_y = newball_y;
+}
+
+function promeniBrzinu() {
+	//I am converting to number. 
+	//I don't think max or min works.
+	ball_vx = Number(f.hv.value);
+	ball_vy = Number(f.vv.value);
+	return false;
+}
+</script>
+</head>
+<body onLoad="init();">  
+<canvas id="canvas" width="400" height="300">
+Your browser doesn't support the HTML5 element canvas.
+</canvas>  
+<br/>
+<form name="f" id="f" onSubmit="return promeniBrzinu();">
+  Horizontalna brzina <input name="hv" id="hv" value="4" type="number" min="-10" max="10" /> 
+<br>
+  Verticalna brzina <input name="vv" id="vv" value="8" type="number" min="-10" max="10"/>
+<input type="submit" value="PROMENI"/>
+</form> 
+</body>
+</html>

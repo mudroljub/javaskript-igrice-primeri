@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=IE8"/>
+    <title>Odbrani položaj</title>
+    <style type="text/css">
+      canvas {
+        border: 1px solid black;
+      }
+
+    </style>
+
+  </head>
+
+  <body>
+    <div style="text-align: center;">
+
+      <canvas id="c2canvas" width="640" height="480" oncontextmenu="return false;">
+        Your browser does not appear to support HTML5. Try upgrading your browser to the latest version.
+      </canvas>
+
+    </div>
+
+    <script src="../../biblioteke/jquery-1.6.min.js"></script>
+    <script src="c2runtime.js"></script>
+
+    <script>
+      // Start the Construct 2 project running on window load.
+      jQuery(document).ready(function() {
+        // Create new runtime using the c2canvas
+        cr.createRuntime("c2canvas");
+      });
+    </script>
+  </body>
+</html>

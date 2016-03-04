@@ -1,0 +1,172 @@
+<!DOCTYPE HTML>
+<html lang="sr-RS">
+<head>
+    <meta charset="UTF-8">
+    <title>lander</title>
+    <script type="text/javascript"
+            src = "../../biblioteke/simpleGame.js"></script>
+    <script type="text/javascript">
+
+    var scene;
+    var lander;
+    var platform;
+    var message = "";
+	var fuel = 200;
+	var kamen, kamen2, kamen2;
+
+    function Lander(){
+        tLander = new Sprite(scene, "lander.png", 50, 50);
+        tLander.setSpeed(0);
+        tLander.falling = true;
+        tLander.imgDefault = "lander.png";
+        tLander.imgUp = "landerUp.png";
+        tLander.imgLeft = "landerLeft.png";
+        tLander.imgRight = "landerRight.png"
+
+        tLander.checkGravity = function(){
+            if (this.falling){
+              this.addVector(180, .1);
+            } // end if
+        } // end checkGravity
+
+		tLander.proveriTipke = function(){
+			this.setImage(this.imgDefault);
+			if (keysDown[K_S]){
+				this.setImage(this.imgUp);
+				this.addVector(0, .3);
+				this.falling = true;
+				fuel--;
+			} // end if
+
+			if (keysDown[K_A]){
+				this.setImage(this.imgLeft);
+				this.addVector(90, .1);
+				fuel-=0.5;
+			} // end if
+
+			if (keysDown[K_D]){
+				this.setImage(this.imgRight);
+				this.addVector(270, .1);
+				fuel-=0.5;
+			} // end if
+		} // end proveriTipke
+
+        tLander.showStats = function(){
+            //displays stats
+            output = "DX: " + Math.round(this.dx * 10) + "<br />";
+            output += "DY: " + Math.round(this.dy * 10) + "<br />";
+            output += "ALT: " + Math.round(525 - this.y) + "<br />";
+            output += "MSG: " + message  + "<br />";
+            output += "Fuel: " + fuel;
+
+            stats.innerHTML = output;
+        } // end showStats
+
+        tLander.checkLanding = function(){
+          if (this.falling){
+            if (this.y > 525){
+              if (this.x < platform.x + 10){
+                if (this.x > platform.x - 10){
+                  if (this.dx < .2){
+                    if (this.dx > -.2){
+                      if (this.dy < 2){
+                        this.setSpeed(0);
+                        this.falling = false;
+                        message = "Nice Landing!";
+                      } else {
+                        message = "too much vertical speed";
+                      } // end if
+                    } else {
+                        message = "too fast to left";
+                    } // end if
+                  } else {
+                    message = "too fast to right";
+                  } // end if
+                } // end 'x too big' if
+              } // end 'x too small' if
+            } // end 'y not big enough' if
+          } // end 'are we falling?' if
+        }
+
+        return tLander;
+    } // end Lander constructor
+
+    function Platform(){
+        tPlatform = new Sprite(scene, "platform.png", 50, 10);
+        tPlatform.setSpeed(0);
+        x = Math.random() * scene.width;
+        tPlatform.setPosition(x,550);
+
+        return tPlatform;
+    } // end platform constructor
+
+
+    function init(){
+        scene = new Scene();
+        scene.setBG("black");
+        lander = new Lander();
+        platform = new Platform();
+        stats = document.getElementById("stats");
+        kamen = new Sprite(scene, "kamen.png", 49, 59);
+		kamen.setSpeed(1);
+		kamen.setPosition(0,150);
+        kamen1 = new Sprite(scene, "kamen.png", 49, 59);
+		kamen1.setSpeed(-1);
+		kamen1.setPosition(200,350);
+        kamen2 = new Sprite(scene, "kamen.png", 49, 59);
+		kamen2.setSpeed(2);
+		kamen2.setPosition(400,450);
+        scene.start();
+    } // end ini
+
+    function update(){
+        scene.clear();
+        lander.checkGravity();
+		proveriSudare();
+		if(fuel > 0) {
+			lander.proveriTipke();
+		}else {
+			fuel = 0;
+			lander.setImage(lander.imgDefault);
+		}
+        lander.showStats();
+        lander.checkLanding();
+
+        lander.update();
+		kamen.update();
+		kamen1.update();
+		kamen2.update();
+        platform.update();
+    } // end update
+
+	function proveriSudare(){
+		if(kamen.collidesWith(lander)) {
+			lander.setSpeed(0);
+			lander.hide();
+		}
+		if(kamen1.collidesWith(lander)) {
+			lander.setSpeed(0);
+			lander.hide();
+		}
+		if(kamen2.collidesWith(lander)) {
+			lander.setSpeed(0);
+			lander.hide();
+		}
+	} // kraj proveriSudare
+
+    </script>
+    <style type="text/css">
+        #stats {
+            position: absolute;
+            font-family: monospace;
+            left: 50px;
+            top: 50px;
+            z-index: 999;
+            color: white;
+        }
+    </style>
+</head>
+<body onload = "init()">
+    <div id = "stats">DX: 0, DY: 0, Alt: 550</div>
+</body>
+</html>
