@@ -40,7 +40,7 @@ var player = {
   speed: 0, // is the playing moving forward (speed = 1) or backwards (speed = -1).
   moveSpeed: 0.18, // how far (in map units) does the player move each step/update
   rotSpeed: 6 // how much does the player rotate each step/update (in degrees)
-}
+};
 
 var mapWidth = 0;
 var mapHeight = 0;
@@ -83,7 +83,7 @@ function bindKeys() {
       player.dir = 1;
       break;
     }
-  }
+  };
 
   document.onkeyup = function (e) {
     e = e || window.event;
@@ -98,7 +98,7 @@ function bindKeys() {
       player.dir = 0;
       break;
     }
-  }
+  };
 }
 
 function gameCycle() {
@@ -133,7 +133,7 @@ function isBlocking(x, y) {
     return true;
 
   // return true if the map block is not 0, ie. if there is a blocking wall.
-  return (map[Math.floor(y)][Math.floor(x)] != 0);
+  return (map[Math.floor(y)][Math.floor(x)] !== 0);
 }
 
 function updateMiniMap() {
@@ -173,8 +173,8 @@ function drawMiniMap() {
   miniMapObjects.width = miniMap.width;
   miniMapObjects.height = miniMap.height;
 
-  var w = (mapWidth * miniMapScale) + "px" // minimap CSS dimensions
-  var h = (mapHeight * miniMapScale) + "px"
+  var w = (mapWidth * miniMapScale) + "px"; // minimap CSS dimensions
+  var h = (mapHeight * miniMapScale) + "px";
   miniMap.style.width = miniMapObjects.style.width = miniMapCtr.style.width = w;
   miniMap.style.height = miniMapObjects.style.height = miniMapCtr.style.height = h;
 
