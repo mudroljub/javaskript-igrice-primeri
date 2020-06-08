@@ -16,7 +16,6 @@ const stripWidth = 2
 const fov = 60 * Math.PI / 180
 
 const numRays = Math.ceil(screenWidth / stripWidth)
-const fovHalf = fov / 2
 
 const viewDist = (screenWidth / 2) / Math.tan((fov / 2))
 
@@ -121,7 +120,7 @@ function initScreen() {
     strip.style.height = '0px'
 
     if (useSingleTexture)
-      strip.src = (window.opera ? 'walls_19color.png' : 'walls.png')
+      strip.src = (window.opera ? 'sprites/walls_19color.png' : 'sprites/walls.png')
 
     strip.oldStyles = {
       left: 0,

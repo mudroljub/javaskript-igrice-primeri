@@ -93,7 +93,7 @@ function initScreen() {
     strip.style.backgroundColor = "magenta";
 
     var img = new Image();
-    img.src = (window.opera ? "walls_19color.png" : "walls.png");
+    img.src = (window.opera ? "sprites/walls_19color.png" : "sprites/walls.png");
     img.style.position = "absolute";
     img.style.left = "0px";
 

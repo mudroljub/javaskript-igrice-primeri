@@ -2,21 +2,6 @@ import { map } from '/js/map.js'
 import { $, dc } from '/js/helpers.js'
 import { player } from '/js/player.js'
 
-// indexOf for IE. From: https://developer.mozilla.org/En/Core_JavaScript_1.5_Reference:Objects:Array:indexOf
-if (!Array.prototype.indexOf)
-  Array.prototype.indexOf = function(elt /* , from*/) {
-    const len = this.length
-    let from = Number(arguments[1]) || 0
-    from = (from < 0) ? Math.ceil(from) : Math.floor(from)
-    if (from < 0)
-      from += len
-    for (; from < len; from++)
-      if (from in this && this[from] === elt)
-        return from
-
-    return -1
-  }
-
 const itemTypes = [{
   img: 'sprites/tablechairs.png',
   block: true
@@ -116,8 +101,6 @@ const stripWidth = 3
 const fov = 60 * Math.PI / 180
 
 const numRays = Math.ceil(screenWidth / stripWidth)
-const fovHalf = fov / 2
-
 const viewDist = (screenWidth / 2) / Math.tan((fov / 2))
 
 const twoPI = Math.PI * 2
@@ -473,7 +456,7 @@ function initScreen() {
     strip.style.left = strip.style.top = '0px'
 
     if (useSingleTexture)
-      strip.src = (window.opera ? 'walls_19color.png' : 'walls.png')
+      strip.src = (window.opera ? 'sprites/walls_19color.png' : 'sprites/walls.png')
 
     strip.oldStyles = {
       left: 0,
