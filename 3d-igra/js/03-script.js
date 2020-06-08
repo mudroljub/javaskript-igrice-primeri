@@ -107,10 +107,10 @@ const twoPI = Math.PI * 2
 
 const numTextures = 4
 const wallTextures = [
-  'walls_1.png',
-  'walls_2.png',
-  'walls_3.png',
-  'walls_4.png'
+  'sprites/walls_1.png',
+  'sprites/walls_2.png',
+  'sprites/walls_3.png',
+  'sprites/walls_4.png'
 ]
 
 const userAgent = navigator.userAgent.toLowerCase()

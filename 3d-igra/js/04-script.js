@@ -86,7 +86,7 @@ const mapItems = [
 ]
 
 const enemyTypes = [{
-  img: 'guard.png',
+  img: 'sprites/guard.png',
   moveSpeed: 0.05,
   rotSpeed: 3,
   totalStates: 13
@@ -124,10 +124,10 @@ const twoPI = Math.PI * 2
 
 const numTextures = 4
 const wallTextures = [
-  'walls_1.png',
-  'walls_2.png',
-  'walls_3.png',
-  'walls_4.png'
+  'sprites/walls_1.png',
+  'sprites/walls_2.png',
+  'sprites/walls_3.png',
+  'sprites/walls_4.png'
 ]
 
 const userAgent = navigator.userAgent.toLowerCase()
