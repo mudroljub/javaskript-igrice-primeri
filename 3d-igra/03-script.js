@@ -1,12 +1,5 @@
 import { map } from '/includes/map.js'
-
-// just a few helper functions
-const $ = function(id) {
-  return document.getElementById(id)
-}
-const dc = function(tag) {
-  return document.createElement(tag)
-}
+import { $, dc } from '/includes/helpers.js'
 
 // indexOf for IE. From: https://developer.mozilla.org/En/Core_JavaScript_1.5_Reference:Objects:Array:indexOf
 if (!Array.prototype.indexOf)

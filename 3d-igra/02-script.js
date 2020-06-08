@@ -1,11 +1,5 @@
 import { map } from '/includes/map.js'
-
-const $ = function(id) {
-  return document.getElementById(id)
-}
-const dc = function(tag) {
-  return document.createElement(tag)
-}
+import { $, dc } from '/includes/helpers.js'
 
 const player = {
   x: 10.5, // current x, y position
