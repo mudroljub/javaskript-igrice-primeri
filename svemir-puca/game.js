@@ -22,7 +22,7 @@ const enemies = {
     B: 150, C: 1.2, E: 75 }
 }
 
-let OBJECT_PLAYER = 1,
+const OBJECT_PLAYER = 1,
   OBJECT_PLAYER_PROJECTILE = 2,
   OBJECT_ENEMY = 4,
   OBJECT_ENEMY_PROJECTILE = 8,
