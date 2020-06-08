@@ -1,5 +1,5 @@
-import { map } from '/includes/map.js'
-import { $, dc } from '/includes/helpers.js'
+import { map } from '/js/map.js'
+import { $, dc } from '/js/helpers.js'
 
 // indexOf for IE. From: https://developer.mozilla.org/En/Core_JavaScript_1.5_Reference:Objects:Array:indexOf
 if (!Array.prototype.indexOf)
@@ -84,9 +84,26 @@ const mapItems = [
   }
 ]
 
+const enemyTypes = [{
+  img: 'guard.png',
+  moveSpeed: 0.05,
+  rotSpeed: 3,
+  totalStates: 13
+}]
+
+const mapEnemies = [{
+  type: 0,
+  x: 17.5,
+  y: 4.5
+}, {
+  type: 0,
+  x: 25.5,
+  y: 16.5
+}]
+
 const player = {
-  x: 13.5, // current x, y position
-  y: 17.9,
+  x: 10.5, // current x, y position
+  y: 6.5,
   dir: 0, // the direction that the player is turning, either -1 for left or 1 for right.
   rotDeg: 0, // the current angle of rotation
   rot: 0, // rotation in radians
@@ -105,7 +122,7 @@ const screenHeight = 200
 
 const showOverlay = true
 
-const stripWidth = 2
+const stripWidth = 3
 const fov = 60 * Math.PI / 180
 
 const numRays = Math.ceil(screenWidth / stripWidth)
@@ -146,10 +163,51 @@ function init() {
 
   initSprites()
 
+  initEnemies()
+
   drawMiniMap()
 
   gameCycle()
   renderCycle()
+}
+
+const enemies = []
+
+function initEnemies() {
+  const screen = $('screen')
+
+  for (let i = 0; i < mapEnemies.length; i++) {
+    const enemy = mapEnemies[i]
+    const type = enemyTypes[enemy.type]
+    const img = dc('img')
+    img.src = type.img
+    img.style.display = 'none'
+    img.style.position = 'absolute'
+
+    enemy.state = 0
+    enemy.rot = 0
+    enemy.rotDeg = 0
+    enemy.dir = 0
+    enemy.speed = 0
+    enemy.moveSpeed = type.moveSpeed
+    enemy.rotSpeed = type.rotSpeed
+    enemy.totalStates = type.totalStates
+
+    enemy.oldStyles = {
+      left: 0,
+      top: 0,
+      width: 0,
+      height: 0,
+      clip: '',
+      display: 'none',
+      zIndex: 0
+    }
+
+    enemy.img = img
+    enemies.push(enemy)
+
+    screen.appendChild(img)
+  }
 }
 
 let spriteMap
@@ -190,7 +248,9 @@ function gameCycle() {
   // time since last game logic
   const timeDelta = now - lastGameCycleTime
 
-  move(timeDelta)
+  move(player, timeDelta)
+
+  ai(timeDelta)
 
   let cycleDelay = gameCycleDelay
 
@@ -205,6 +265,35 @@ function gameCycle() {
   lastGameCycleTime = now
 }
 
+function ai(timeDelta) {
+  for (let i = 0; i < enemies.length; i++) {
+    const enemy = enemies[i]
+
+    const dx = player.x - enemy.x
+    const dy = player.y - enemy.y
+
+    const dist = Math.sqrt(dx * dx + dy * dy)
+    if (dist > 4) {
+      const angle = Math.atan2(dy, dx)
+
+      enemy.rotDeg = angle * 180 / Math.PI
+      enemy.rot = angle
+      enemy.speed = 1
+
+      const walkCycleTime = 1000
+      const numWalkSprites = 4
+
+      enemy.state = Math.floor((new Date() % walkCycleTime) / (walkCycleTime / numWalkSprites)) + 1
+
+    } else {
+      enemy.state = 0
+      enemy.speed = 0
+    }
+
+    move(enemies[i], timeDelta)
+  }
+}
+
 let lastRenderCycleTime = 0
 
 function renderCycle() {
@@ -216,6 +305,8 @@ function renderCycle() {
   castRays()
 
   renderSprites()
+
+  renderEnemies()
 
   // time since last rendering
   const now = new Date().getTime()
@@ -275,12 +366,11 @@ function renderSprites() {
     // y is constant since we keep all sprites at the same height and vertical position
     img.style.top = ((screenHeight - size) / 2) + 'px'
 
-    const dbx = sprite.x - player.x
-    const dby = sprite.y - player.y
-
     img.style.width = size + 'px'
     img.style.height = size + 'px'
 
+    const dbx = sprite.x - player.x
+    const dby = sprite.y - player.y
     const blockDist = dbx * dbx + dby * dby
     img.style.zIndex = -Math.floor(blockDist * 1000)
   }
@@ -296,6 +386,87 @@ function renderSprites() {
 
 }
 
+function renderEnemies() {
+
+  for (let i = 0; i < enemies.length; i++) {
+    const enemy = enemies[i]
+    const {img} = enemy
+
+    const dx = enemy.x - player.x
+    const dy = enemy.y - player.y
+
+    let angle = Math.atan2(dy, dx) - player.rot
+
+    if (angle < -Math.PI) angle += 2 * Math.PI
+    if (angle >= Math.PI) angle -= 2 * Math.PI
+
+    // is enemy in front of player? Maybe use the FOV value instead.
+    if (angle > -Math.PI * 0.5 && angle < Math.PI * 0.5) {
+      const distSquared = dx * dx + dy * dy
+      const dist = Math.sqrt(distSquared)
+      const size = viewDist / (Math.cos(angle) * dist)
+
+      if (size <= 0) continue
+
+      const x = Math.tan(angle) * viewDist
+
+      const {style} = img
+      const {oldStyles} = enemy
+
+      // height is equal to the sprite size
+      if (size != oldStyles.height) {
+        style.height = size + 'px'
+        oldStyles.height = size
+      }
+
+      // width is equal to the sprite size times the total number of states
+      const styleWidth = size * enemy.totalStates
+      if (styleWidth != oldStyles.width) {
+        style.width = styleWidth + 'px'
+        oldStyles.width = styleWidth
+      }
+
+      // top position is halfway down the screen, minus half the sprite height
+      const styleTop = ((screenHeight - size) / 2)
+      if (styleTop != oldStyles.top) {
+        style.top = styleTop + 'px'
+        oldStyles.top = styleTop
+      }
+
+      // place at x position, adjusted for sprite size and the current sprite state
+      const styleLeft = (screenWidth / 2 + x - size / 2 - size * enemy.state)
+      if (styleLeft != oldStyles.left) {
+        style.left = styleLeft + 'px'
+        oldStyles.left = styleLeft
+      }
+
+      const styleZIndex = -(distSquared * 1000) >> 0
+      if (styleZIndex != oldStyles.zIndex) {
+        style.zIndex = styleZIndex
+        oldStyles.zIndex = styleZIndex
+      }
+
+      var styleDisplay = 'block'
+      if (styleDisplay != oldStyles.display) {
+        style.display = styleDisplay
+        oldStyles.display = styleDisplay
+      }
+
+      const styleClip = 'rect(0, ' + (size * (enemy.state + 1)) + ', ' + size + ', ' + (size * (enemy.state)) + ')'
+      if (styleClip != oldStyles.clip) {
+        style.clip = styleClip
+        oldStyles.clip = styleClip
+      }
+    } else {
+      var styleDisplay = 'none'
+      if (styleDisplay != enemy.oldStyles.display) {
+        img.style.display = styleDisplay
+        enemy.oldStyles.display = styleDisplay
+      }
+    }
+  }
+}
+
 function updateOverlay() {
   overlay.innerHTML = 'FPS: ' + fps.toFixed(1) + '<br/>' + overlayText
   overlayText = ''
@@ -308,8 +479,8 @@ function initScreen() {
   for (let i = 0; i < screenWidth; i += stripWidth) {
     const strip = dc('img')
     strip.style.position = 'absolute'
-    strip.style.left = 0 + 'px'
     strip.style.height = '0px'
+    strip.style.left = strip.style.top = '0px'
 
     if (useSingleTexture)
       strip.src = (window.opera ? 'walls_19color.png' : 'walls.png')
@@ -441,8 +612,8 @@ function castSingleRay(rayAngle, stripIdx) {
   var y = player.y + (x - player.x) * slope // starting vertical position. We add the small horizontal step we just made, multiplied by the slope.
 
   while (x >= 0 && x < mapWidth && y >= 0 && y < mapHeight) {
-    var wallX = Math.floor(x + (right ? 0 : -1))
-    var wallY = Math.floor(y)
+    var wallX = (x + (right ? 0 : -1)) >> 0
+    var wallY = (y) >> 0
 
     if (spriteMap[wallY][wallX] && !spriteMap[wallY][wallX].visible) {
       spriteMap[wallY][wallX].visible = true
@@ -488,8 +659,8 @@ function castSingleRay(rayAngle, stripIdx) {
   var x = player.x + (y - player.y) * slope
 
   while (x >= 0 && x < mapWidth && y >= 0 && y < mapHeight) {
-    var wallY = Math.floor(y + (up ? -1 : 0))
-    var wallX = Math.floor(x)
+    var wallY = (y + (up ? -1 : 0)) >> 0
+    var wallX = (x) >> 0
 
     if (spriteMap[wallY][wallX] && !spriteMap[wallY][wallX].visible) {
       spriteMap[wallY][wallX].visible = true
@@ -546,23 +717,26 @@ function castSingleRay(rayAngle, stripIdx) {
 
     let imgTop = 0
 
+    const {style} = strip
+    const {oldStyles} = strip
+
     var styleHeight
     if (useSingleTexture) {
       // then adjust the top placement according to which wall texture we need
-      imgTop = Math.floor(height * (wallType - 1))
-      var styleHeight = Math.floor(height * numTextures)
+      imgTop = (height * (wallType - 1)) >> 0
+      var styleHeight = (height * numTextures) >> 0
     } else {
       const styleSrc = wallTextures[wallType - 1]
-      if (strip.oldStyles.src != styleSrc) {
+      if (oldStyles.src != styleSrc) {
         strip.src = styleSrc
-        strip.oldStyles.src = styleSrc
+        oldStyles.src = styleSrc
       }
       var styleHeight = height
     }
 
-    if (strip.oldStyles.height != styleHeight) {
-      strip.style.height = styleHeight + 'px'
-      strip.oldStyles.height = styleHeight
+    if (oldStyles.height != styleHeight) {
+      style.height = styleHeight + 'px'
+      oldStyles.height = styleHeight
     }
 
     let texX = Math.round(textureX * width)
@@ -570,35 +744,39 @@ function castSingleRay(rayAngle, stripIdx) {
       texX = width - stripWidth
     texX += (wallIsShaded ? width : 0)
 
-    const styleWidth = Math.floor(width * 2)
-    if (strip.oldStyles.width != styleWidth) {
-      strip.style.width = styleWidth + 'px'
-      strip.oldStyles.width = styleWidth
+    const styleWidth = (width * 2) >> 0
+    if (oldStyles.width != styleWidth) {
+      style.width = styleWidth + 'px'
+      oldStyles.width = styleWidth
     }
 
     const styleTop = top - imgTop
-    if (strip.oldStyles.top != styleTop) {
-      strip.style.top = styleTop + 'px'
-      strip.oldStyles.top = styleTop
+    if (oldStyles.top != styleTop) {
+      style.top = styleTop + 'px'
+      oldStyles.top = styleTop
     }
 
     const styleLeft = stripIdx * stripWidth - texX
-    if (strip.oldStyles.left != styleLeft) {
-      strip.style.left = styleLeft + 'px'
-      strip.oldStyles.left = styleLeft
+    if (oldStyles.left != styleLeft) {
+      style.left = styleLeft + 'px'
+      oldStyles.left = styleLeft
     }
 
     const styleClip = 'rect(' + imgTop + ', ' + (texX + stripWidth) + ', ' + (imgTop + height) + ', ' + texX + ')'
-    if (strip.oldStyles.clip != styleClip) {
-      strip.style.clip = styleClip
-      strip.oldStyles.clip = styleClip
+    if (oldStyles.clip != styleClip) {
+      style.clip = styleClip
+      oldStyles.clip = styleClip
     }
 
     const dwx = xWallHit - player.x
     const dwy = yWallHit - player.y
-
     const wallDist = dwx * dwx + dwy * dwy
-    strip.style.zIndex = -Math.floor(wallDist * 1000)
+    const styleZIndex = -(wallDist * 1000) >> 0
+    if (styleZIndex != oldStyles.zIndex) {
+      strip.style.zIndex = styleZIndex
+      oldStyles.zIndex = styleZIndex
+    }
+
   }
 
 }
@@ -619,30 +797,33 @@ function drawRay(rayX, rayY) {
   objectCtx.stroke()
 }
 
-function move(timeDelta) {
+function move(entity, timeDelta) {
   // time timeDelta has passed since we moved last time. We should have moved after time gameCycleDelay,
   // so calculate how much we should multiply our movement to ensure game speed is constant
+
   const mul = timeDelta / gameCycleDelay
 
-  const moveStep = mul * player.speed * player.moveSpeed // player will move this far along the current direction vector
+  const moveStep = mul * entity.speed * entity.moveSpeed // entity will move this far along the current direction vector
 
-  player.rotDeg += mul * player.dir * player.rotSpeed // add rotation if player is rotating (player.dir != 0)
+  entity.rotDeg += mul * entity.dir * entity.rotSpeed // add rotation if entity is rotating (entity.dir != 0)
+  entity.rotDeg %= 360
 
-  player.rotDeg %= 360
+  if (entity.rotDeg < -180) entity.rotDeg += 360
+  if (entity.rotDeg >= 180) entity.rotDeg -= 360
 
-  const snap = (player.rotDeg + 360) % 90
+  const snap = (entity.rotDeg + 360) % 90
   if (snap < 2 || snap > 88)
-    player.rotDeg = Math.round(player.rotDeg / 90) * 90
+    entity.rotDeg = Math.round(entity.rotDeg / 90) * 90
 
-  player.rot = player.rotDeg * Math.PI / 180
+  entity.rot = entity.rotDeg * Math.PI / 180
 
-  const newX = player.x + Math.cos(player.rot) * moveStep // calculate new player position with simple trigonometry
-  const newY = player.y + Math.sin(player.rot) * moveStep
+  const newX = entity.x + Math.cos(entity.rot) * moveStep // calculate new entity position with simple trigonometry
+  const newY = entity.y + Math.sin(entity.rot) * moveStep
 
-  const pos = checkCollision(player.x, player.y, newX, newY, 0.35)
+  const pos = checkCollision(entity.x, entity.y, newX, newY, 0.35)
 
-  player.x = pos.x // set new position
-  player.y = pos.y
+  entity.x = pos.x // set new position
+  entity.y = pos.y
 }
 
 function checkCollision(fromX, fromY, toX, toY, radius) {
@@ -745,7 +926,6 @@ function isBlocking(x, y) {
     return true
 
   return false
-
 }
 
 function updateMiniMap() {
@@ -767,10 +947,22 @@ function updateMiniMap() {
   objectCtx.beginPath()
   objectCtx.moveTo(player.x * miniMapScale, player.y * miniMapScale)
   objectCtx.lineTo(
-    (player.x + Math.cos(player.rot) * 4) * miniMapScale, (player.y + Math.sin(player.rot) * 4) * miniMapScale
+    (player.x + Math.cos(player.rot) * 4) * miniMapScale,
+    (player.y + Math.sin(player.rot) * 4) * miniMapScale
   )
   objectCtx.closePath()
   objectCtx.stroke()
+
+  for (let i = 0; i < enemies.length; i++) {
+    const enemy = enemies[i]
+
+    objectCtx.fillStyle = 'blue'
+    objectCtx.fillRect( // draw a dot at the enemy position
+      enemy.x * miniMapScale - 2,
+      enemy.y * miniMapScale - 2,
+      4, 4
+    )
+  }
 }
 
 function drawMiniMap() {

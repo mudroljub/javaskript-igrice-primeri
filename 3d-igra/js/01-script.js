@@ -1,5 +1,5 @@
-import { map } from '/includes/map.js'
-import { $, dc } from '/includes/helpers.js'
+import { map } from '/js/map.js'
+import { $, dc } from '/js/helpers.js'
 
 const player = {
   x: 10.5, // current x, y position
