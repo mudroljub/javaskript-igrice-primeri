@@ -1,43 +1,12 @@
 import { map } from '/js/map.js'
 import { $, dc } from '/js/helpers.js'
 import { player } from '/js/player.js'
-
-let mapWidth = 0
-let mapHeight = 0
-
-const miniMapScale = 8
-
-const screenWidth = 320
-const screenHeight = 200
-
-const showOverlay = true
-
-const stripWidth = 2
-const fov = 60 * Math.PI / 180
-
-const numRays = Math.ceil(screenWidth / stripWidth)
-
-const viewDist = (screenWidth / 2) / Math.tan((fov / 2))
-
-const twoPI = Math.PI * 2
-
-const numTextures = 4
-const wallTextures = [
-  'sprites/walls_1.png',
-  'sprites/walls_2.png',
-  'sprites/walls_3.png',
-  'sprites/walls_4.png'
-]
-
-const userAgent = navigator.userAgent.toLowerCase()
-const isGecko = userAgent.indexOf('gecko') != -1 && userAgent.indexOf('safari') == -1
-
-// enable this to use a single image file containing all wall textures. This performs better in Firefox. Opera likes smaller images.
-const useSingleTexture = isGecko
+import { miniMapScale, screenWidth, screenHeight, showOverlay, stripWidth, numRays, viewDist, twoPI, numTextures, wallTextures, useSingleTexture } from '/js/config.js'
 
 const screenStrips = []
+let mapWidth = 0
+let mapHeight = 0
 let overlay
-
 let fps = 0
 let overlayText = ''
 
