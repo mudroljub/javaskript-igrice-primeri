@@ -60,15 +60,9 @@ function Lander() {
                   this.setSpeed(0)
                   this.falling = false
                   message = 'Nice Landing!'
-                } else {
-                  message = 'too much vertical speed'
-                } // end if
-              } else {
-                message = 'too fast to left'
-              } // end if
-            } else {
-              message = 'too fast to right'
-            } // end if
+                }
+              }
+            }
           } // end 'x too big' if
         } // end 'x too small' if
       } // end 'y not big enough' if
