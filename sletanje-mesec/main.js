@@ -1,27 +1,31 @@
+/* global Sprite, Scene, keysDown */
 /* eslint-disable curly */
 
-let scene
-let lander
-let platform
 let message = ''
 let fuel = 200
 
-function Lander() {
-  tLander = new Sprite(scene, 'lander.png', 50, 50)
-  tLander.setSpeed(0)
-  tLander.falling = true
-  tLander.imgDefault = 'lander.png'
-  tLander.imgUp = 'landerUp.png'
-  tLander.imgLeft = 'landerLeft.png'
-  tLander.imgRight = 'landerRight.png'
+const scene = new Scene()
+scene.setBG('black')
+const lander = new Lander()
+const platform = new Platform()
+const stats = document.getElementById('stats')
+scene.start()
 
-  tLander.checkGravity = function() {
+function Lander() {
+  const lander = new Sprite(scene, 'lander.png', 50, 50)
+  lander.setSpeed(0)
+  lander.falling = true
+  lander.imgDefault = 'lander.png'
+  lander.imgUp = 'landerUp.png'
+  lander.imgLeft = 'landerLeft.png'
+  lander.imgRight = 'landerRight.png'
+
+  lander.checkGravity = function() {
     if (this.falling)
       this.addVector(180, .1)
-    // end if
   }
 
-  tLander.proveriTipke = function() {
+  lander.proveriTipke = function() {
     this.setImage(this.imgDefault)
     if (keysDown[K_S]) {
       this.setImage(this.imgUp)
@@ -43,13 +47,13 @@ function Lander() {
     }
   }
 
-  tLander.showStats = function() {
-    output = 'MSG: ' + message + '<br />'
+  lander.showStats = function() {
+    let output = 'MSG: ' + message + '<br />'
     output += 'Fuel: ' + fuel
     stats.innerHTML = output
   }
 
-  tLander.checkLanding = function() {
+  lander.checkLanding = function() {
     if (this.falling) {
       if (this.y > 525) {
         if (this.x < platform.x + 10) {
@@ -68,24 +72,15 @@ function Lander() {
       } // end 'y not big enough' if
     } // end 'are we falling?' if
   }
-  return tLander
-} // end Lander constructor
-
-function Platform() {
-  tPlatform = new Sprite(scene, 'platform.png', 50, 10)
-  tPlatform.setSpeed(0)
-  x = Math.random() * scene.width
-  tPlatform.setPosition(x, 550)
-  return tPlatform
+  return lander
 }
 
-function init() {
-  scene = new Scene()
-  scene.setBG('black')
-  lander = new Lander()
-  platform = new Platform()
-  stats = document.getElementById('stats')
-  scene.start()
+function Platform() {
+  const platform = new Sprite(scene, 'platform.png', 50, 10)
+  platform.setSpeed(0)
+  const x = Math.random() * scene.width
+  platform.setPosition(x, 550)
+  return platform
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -104,5 +99,3 @@ function update() {
   lander.update()
   platform.update()
 }
-
-init()
